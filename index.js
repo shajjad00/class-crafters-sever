@@ -61,6 +61,17 @@ async function run() {
       }
     });
 
+    //get all classes
+
+    app.get("/allClasses", async (req, res) => {
+      try {
+        const result = await teacherClassesCollection.find().toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
     //make user admin
     app.patch("/users/admin/:id", async (req, res) => {
       try {
@@ -170,7 +181,7 @@ async function run() {
       }
     });
 
-    // get classes
+    // get classes of specific teacher
     app.get("/user/teacher/classes/:email", async (req, res) => {
       try {
         const userEmail = req.params.email;
@@ -188,6 +199,39 @@ async function run() {
         const id = req.params.id;
         const query = { _id: new ObjectId(id) };
         const result = await teacherClassesCollection.deleteOne(query);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //get single classes
+
+    app.get("/classes/update/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await teacherClassesCollection.findOne(query);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //update single classes
+    app.put("/classes/update/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const classData = req.body;
+        const query = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            ...classData,
+          },
+        };
+        const result = await teacherClassesCollection.updateOne(
+          query,
+          updatedDoc
+        );
         res.send(result);
       } catch (err) {
         console.log(err);
