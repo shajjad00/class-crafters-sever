@@ -72,6 +72,29 @@ async function run() {
       }
     });
 
+    //approve teacher class
+
+    app.patch("/allClasses/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const option = { upsert: true };
+        const updatedDoc = {
+          $set: {
+            status: "accepted",
+          },
+        };
+        const result = await teacherClassesCollection.updateOne(
+          query,
+          updatedDoc,
+          option
+        );
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
     //make user admin
     app.patch("/users/admin/:id", async (req, res) => {
       try {
@@ -103,7 +126,6 @@ async function run() {
     app.patch("/admin/request/:email", async (req, res) => {
       try {
         const requesterEmail = req.params.email;
-        console.log(requesterEmail);
         const query = { email: requesterEmail };
         const option = { upsert: true };
         const updatedDoc = {
