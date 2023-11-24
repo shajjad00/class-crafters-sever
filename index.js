@@ -39,12 +39,10 @@ async function run() {
     app.post("/users/", async (req, res) => {
       try {
         const user = req.body;
-        console.log(user);
         const isUserExist = await userCollection.findOne({ email: user.email });
         if (isUserExist) {
           return res.send({ message: "user already exists", insertedId: null });
         }
-        console.log(isUserExist);
         const result = await userCollection.insertOne(user);
         res.send(result);
       } catch (err) {
@@ -65,7 +63,6 @@ async function run() {
     app.patch("/users/admin/:id", async (req, res) => {
       try {
         const id = req.params.id;
-        console.log(id);
         const query = { _id: new ObjectId(id) };
         const updatedDoc = {
           $set: {
@@ -78,18 +75,74 @@ async function run() {
         console.log(err);
       }
     });
+
+    //make user teacher
+    // app.patch("/user/teacher/role", async (req, res) => {
+    //   try {
+    //     const userEmail = req.body;
+    //     console.log(userEmail);
+    //   } catch (err) {
+    //     console.log(err);
+    //   }
+    // });
+    //make user teacher
+
+    app.patch("/admin/request/:email", async (req, res) => {
+      try {
+        const requesterEmail = req.params.email;
+        console.log(requesterEmail);
+        const query = { email: requesterEmail };
+        const option = { upsert: true };
+        const updatedDoc = {
+          $set: {
+            status: "accepted",
+          },
+        };
+        const result = await teacherRequestCollection.updateOne(
+          query,
+          updatedDoc,
+          option
+        );
+
+        //update role
+        const queryForRole = { email: requesterEmail };
+        const updatedDocForRole = {
+          $set: {
+            role: "teacher",
+          },
+        };
+        const resultForRole = await userCollection.updateOne(
+          queryForRole,
+          updatedDocForRole,
+          option
+        );
+        console.log(resultForRole);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
     //teacher request
 
     app.post("/user/teacher/Request", async (req, res) => {
       try {
         const classData = req.body;
-        console.log(classData);
         const result = await teacherRequestCollection.insertOne(classData);
         res.send(result);
       } catch (err) {
         console.log(err);
       }
     });
+
+    app.get("/user/teacher/Request", async (req, res) => {
+      try {
+        const result = await teacherRequestCollection.find().toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
