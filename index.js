@@ -29,6 +29,7 @@ const userCollection = client.db("classDb").collection("users");
 const teacherRequestCollection = client
   .db("classDb")
   .collection("teacherRequest");
+const teacherClassesCollection = client.db("classDb").collection("classes");
 
 async function run() {
   try {
@@ -36,6 +37,7 @@ async function run() {
     await client.connect();
 
     // admin  related api
+
     app.post("/users/", async (req, res) => {
       try {
         const user = req.body;
@@ -122,6 +124,18 @@ async function run() {
         console.log(err);
       }
     });
+    //check user role
+    app.get("/user/role/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const result = await userCollection.findOne(query);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
     //teacher request
 
     app.post("/user/teacher/Request", async (req, res) => {
@@ -137,6 +151,43 @@ async function run() {
     app.get("/user/teacher/Request", async (req, res) => {
       try {
         const result = await teacherRequestCollection.find().toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //teacher related
+
+    //post classes
+    app.post("/user/teacher/classes", async (req, res) => {
+      try {
+        const classData = req.body;
+        const result = await teacherClassesCollection.insertOne(classData);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    // get classes
+    app.get("/user/teacher/classes/:email", async (req, res) => {
+      try {
+        const userEmail = req.params.email;
+        const query = { email: userEmail };
+        const result = await teacherClassesCollection.find(query).toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //delete classes
+    app.delete("/teacher/classes/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await teacherClassesCollection.deleteOne(query);
         res.send(result);
       } catch (err) {
         console.log(err);
