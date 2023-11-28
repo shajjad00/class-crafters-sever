@@ -77,7 +77,7 @@ async function run() {
       }
     });
 
-    //get all classes
+    //get all teacher requested class classes
 
     app.get("/allClasses", async (req, res) => {
       try {
@@ -146,6 +146,21 @@ async function run() {
       try {
         const result = await allApprovedClassesCollection.find().toArray();
         res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //get single Approved Class
+
+    app.get("/allApprovedClass/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+
+        const query = { _id: new ObjectId(id) };
+        const singleApprovedClassResult =
+          await allApprovedClassesCollection.findOne(query);
+        res.send(singleApprovedClassResult);
       } catch (err) {
         console.log(err);
       }
