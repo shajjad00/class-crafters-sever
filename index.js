@@ -55,9 +55,22 @@ async function run() {
       }
     });
 
+    //get user
     app.get("/users", async (req, res) => {
       try {
         const result = await userCollection.find().toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //get user by id
+
+    app.get("/users/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const result = await userCollection.findOne(query);
         res.send(result);
       } catch (err) {
         console.log(err);
@@ -77,7 +90,7 @@ async function run() {
 
     //approve teacher class
 
-    app.patch("/allClasses/:id", async (req, res) => {
+    app.patch("/allClasses/approve/:id", async (req, res) => {
       try {
         const id = req.params.id;
         const query = { _id: new ObjectId(id) };
@@ -93,11 +106,34 @@ async function run() {
           updatedDoc,
           option
         );
+
         //send to approved class to db
         const getApprovedClass = await teacherClassesCollection.findOne(query);
         const sendApprovedClassToApprovedClassesCollection =
           await allApprovedClassesCollection.insertOne(getApprovedClass);
         // console.log(sendApprovedClassToApprovedClassesCollection);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //reject teacher class
+    app.patch("/allClasses/reject/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const option = { upsert: true };
+        const updatedDoc = {
+          $set: {
+            status: "rejected",
+          },
+        };
+        const result = await teacherClassesCollection.updateOne(
+          query,
+          updatedDoc,
+          option
+        );
         res.send(result);
       } catch (err) {
         console.log(err);
