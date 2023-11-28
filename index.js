@@ -30,6 +30,9 @@ const teacherRequestCollection = client
   .db("classDb")
   .collection("teacherRequest");
 const teacherClassesCollection = client.db("classDb").collection("classes");
+const allApprovedClassesCollection = client
+  .db("classDb")
+  .collection("allApprovedClasses");
 
 async function run() {
   try {
@@ -84,11 +87,28 @@ async function run() {
             status: "accepted",
           },
         };
+        //update status
         const result = await teacherClassesCollection.updateOne(
           query,
           updatedDoc,
           option
         );
+        //send to approved class to db
+        const getApprovedClass = await teacherClassesCollection.findOne(query);
+        const sendApprovedClassToApprovedClassesCollection =
+          await allApprovedClassesCollection.insertOne(getApprovedClass);
+        // console.log(sendApprovedClassToApprovedClassesCollection);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //get all Approved Class
+
+    app.get("/allApprovedClass", async (req, res) => {
+      try {
+        const result = await allApprovedClassesCollection.find().toArray();
         res.send(result);
       } catch (err) {
         console.log(err);
