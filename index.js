@@ -122,12 +122,12 @@ async function run() {
           option
         );
 
-        //send to approved class to db
+        //send  approved class to db
         const getApprovedClass = await teacherClassesCollection.findOne(query);
+        const approvedClass = { ...getApprovedClass, count: 0 };
         const sendApprovedClassToApprovedClassesCollection =
-          await allApprovedClassesCollection.insertOne(getApprovedClass);
-        // console.log(sendApprovedClassToApprovedClassesCollection);
-        res.send(result);
+          await allApprovedClassesCollection.insertOne(approvedClass);
+        res.send(sendApprovedClassToApprovedClassesCollection);
       } catch (err) {
         console.log(err);
       }
@@ -180,6 +180,55 @@ async function run() {
         console.log(err);
       }
     });
+
+    //update enroll count of single Approved Class
+
+    app.patch("/updateEnrollCount/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        // get data
+        const query = { _id: new ObjectId(id) };
+        const classData = await allApprovedClassesCollection.findOne(query);
+        const enrollCount = classData.count;
+        console.log(193, classData);
+        const option = { upsert: true };
+        const updatedDoc = {
+          $set: {
+            count: enrollCount + 1,
+          },
+        };
+
+        const result = await allApprovedClassesCollection.updateOne(
+          query,
+          updatedDoc,
+          option
+        );
+        res.send(result);
+        console.log(207, result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    // get enroll count
+
+    app.get("/enrollCount/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const options = {
+          projection: { _id: 0, count: 1 },
+        };
+        const result = await allApprovedClassesCollection.findOne(
+          query,
+          options
+        );
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
     //send enrolled class data to db
     app.post("/enrolledClass", async (req, res) => {
       try {
