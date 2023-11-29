@@ -33,6 +33,9 @@ const teacherClassesCollection = client.db("classDb").collection("classes");
 const allApprovedClassesCollection = client
   .db("classDb")
   .collection("allApprovedClasses");
+const enrolledClassCollection = client
+  .db("classDb")
+  .collection("allEnrolledClass");
 
 async function run() {
   try {
@@ -173,6 +176,31 @@ async function run() {
         const singleApprovedClassResult =
           await allApprovedClassesCollection.findOne(query);
         res.send(singleApprovedClassResult);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //send enrolled class data to db
+    app.post("/enrolledClass", async (req, res) => {
+      try {
+        const enrolledClassData = req.body;
+        const result = await enrolledClassCollection.insertOne(
+          enrolledClassData
+        );
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //get enrolled class data from db
+
+    app.get("/enrolledClass/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const result = await enrolledClassCollection.find(query).toArray();
+        res.send(result);
       } catch (err) {
         console.log(err);
       }
