@@ -37,6 +37,7 @@ const enrolledClassCollection = client
   .db("classDb")
   .collection("allEnrolledClass");
 const assignmentCollection = client.db("classDb").collection("assignment");
+const feedbackCollection = client.db("classDb").collection("feedback");
 
 async function run() {
   try {
@@ -477,6 +478,17 @@ async function run() {
           option
         );
         res.send(assignmentSubmit);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //post feedback details
+    app.post("/feedback", async (req, res) => {
+      try {
+        const feedbackData = req.body;
+        console.log(feedbackData);
+        const result = await feedbackCollection.insertOne(feedbackData);
+        res.send(result);
       } catch (err) {
         console.log(err);
       }
