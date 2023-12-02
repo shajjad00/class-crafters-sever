@@ -36,17 +36,20 @@ const allApprovedClassesCollection = client
 const enrolledClassCollection = client
   .db("classDb")
   .collection("allEnrolledClass");
+const assignmentCollection = client.db("classDb").collection("assignment");
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-
     //payment related
 
     app.post("/create-payment-intent", async (req, res) => {
-      const { price } = req.body;
-      const amount = parseInt(price * 100);
+      const { id } = req.body;
+      const query = { _id: new ObjectId(id) };
+      const item = await allApprovedClassesCollection.findOne(query);
+      console.log(item.price);
+      const amount = parseInt(item.price * 100);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "USD",
@@ -420,6 +423,64 @@ async function run() {
       }
     });
 
+    //post assignment details
+    app.post("/assignment", async (req, res) => {
+      try {
+        const assignmentData = req.body;
+        console.log(assignmentData);
+        const result = await assignmentCollection.insertOne(assignmentData);
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //get assignment count
+    app.get("/assignmentCount/:email", async (req, res) => {
+      try {
+        const email = req.params.email;
+        const query = { email: email };
+        const assignment = await assignmentCollection.estimatedDocumentCount(
+          query
+        );
+        res.send({ assignment });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //get specific assignment
+    app.get("/assignment/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const query = { assignmentId: id };
+        const assignment = await assignmentCollection.find(query).toArray();
+        res.send(assignment);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //update submission of specific assignment
+    app.patch("/assignment/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const date = new Date();
+        const query = { assignmentId: id };
+        const option = { upsert: true };
+        const updatedDoc = {
+          $set: {
+            submissionDate: date,
+            isSubmitted: true,
+          },
+        };
+        const assignmentSubmit = await assignmentCollection.updateOne(
+          query,
+          updatedDoc,
+          option
+        );
+        res.send(assignmentSubmit);
+      } catch (err) {
+        console.log(err);
+      }
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
