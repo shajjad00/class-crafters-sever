@@ -42,7 +42,7 @@ const feedbackCollection = client.db("classDb").collection("feedback");
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     //payment related
 
     app.post("/create-payment-intent", async (req, res) => {
@@ -96,6 +96,34 @@ async function run() {
       }
     });
 
+    //get total user
+    app.get("/usersCount", async (req, res) => {
+      try {
+        const totalUser = await userCollection.estimatedDocumentCount();
+        res.send({ totalUser });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //get total class
+    app.get("/classesCount", async (req, res) => {
+      try {
+        const totalClass =
+          await allApprovedClassesCollection.estimatedDocumentCount();
+        res.send({ totalClass });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+    //get total user
+    app.get("/usersCount", async (req, res) => {
+      try {
+        const totalUser = await userCollection.estimatedDocumentCount();
+        res.send({ totalUser });
+      } catch (err) {
+        console.log(err);
+      }
+    });
     //get all teacher requested class classes
 
     app.get("/allClasses", async (req, res) => {
@@ -170,6 +198,21 @@ async function run() {
       }
     });
 
+    //get highest enrollment classes
+    app.get("/allApprovedClass/highestEnrollment", async (req, res) => {
+      try {
+        const result = await allApprovedClassesCollection
+          .find()
+          .sort({
+            count: 1,
+          })
+          .limit(6)
+          .toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
     //get single Approved Class
 
     app.get("/allApprovedClass/:id", async (req, res) => {
@@ -227,6 +270,16 @@ async function run() {
           query,
           options
         );
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    //get all  enroll class
+    app.get("/enrolledClass", async (req, res) => {
+      try {
+        const result = await allApprovedClassesCollection.find().toArray();
         res.send(result);
       } catch (err) {
         console.log(err);
@@ -493,8 +546,17 @@ async function run() {
         console.log(err);
       }
     });
+    //get feedback details
+    app.get("/feedback", async (req, res) => {
+      try {
+        const result = await feedbackCollection.find().toArray();
+        res.send(result);
+      } catch (err) {
+        console.log(err);
+      }
+    });
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
